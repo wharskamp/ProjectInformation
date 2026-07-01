@@ -1,0 +1,13 @@
+bin/
+obj/
+.vs/
+.vscode/
+TestResults/
+*.user
+*.suo
+*.rsuser
+*.nupkg
+*.snupkg
+*.sqlite
+*.sqlite3
+*.db
