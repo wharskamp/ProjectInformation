@@ -20,7 +20,9 @@ public sealed class ContactService : IContactService
         CancellationToken cancellationToken = default)
     {
         var mails = await _pstImportService.ReadMailsAsync(pstFilePath, null, cancellationToken);
-        var contacts = ContactAggregator.BuildContacts(mails);
+        var importedContacts = ContactAggregator.BuildContacts(mails);
+        var existingContacts = await _contactRepository.GetContactsAsync(cancellationToken);
+        var contacts = ContactAggregator.MergeContacts(existingContacts, importedContacts);
         await _contactRepository.ReplaceContactsAsync(contacts, cancellationToken);
 
         return contacts;

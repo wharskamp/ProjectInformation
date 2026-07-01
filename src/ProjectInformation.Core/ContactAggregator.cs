@@ -29,6 +29,33 @@ public static class ContactAggregator
             .ToArray();
     }
 
+    public static IReadOnlyList<ContactRecord> MergeContacts(
+        IEnumerable<ContactRecord> existingContacts,
+        IEnumerable<ContactRecord> importedContacts)
+    {
+        return existingContacts
+            .Concat(importedContacts)
+            .GroupBy(ContactKey, StringComparer.OrdinalIgnoreCase)
+            .Select(group =>
+            {
+                var latest = group.OrderByDescending(contact => contact.LaatsteContact).First();
+                var projects = group
+                    .SelectMany(contact => contact.Projecten.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .Order(StringComparer.OrdinalIgnoreCase);
+
+                return new ContactRecord(
+                    latest.Naam,
+                    latest.Email,
+                    string.Join("; ", projects),
+                    group.Max(contact => contact.LaatsteContact),
+                    group.Sum(contact => contact.AantalMails));
+            })
+            .OrderBy(contact => contact.Naam, StringComparer.CurrentCultureIgnoreCase)
+            .ThenBy(contact => contact.Email, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+    }
+
     private static string ContactKey(MailSummary mail)
     {
         if (!string.IsNullOrWhiteSpace(mail.SenderEmailAddress))
@@ -37,5 +64,15 @@ public static class ContactAggregator
         }
 
         return mail.SenderName.Trim();
+    }
+
+    private static string ContactKey(ContactRecord contact)
+    {
+        if (!string.IsNullOrWhiteSpace(contact.Email))
+        {
+            return contact.Email.Trim();
+        }
+
+        return contact.Naam.Trim();
     }
 }

@@ -22,6 +22,18 @@ ProjectInformation is a Windows desktop application foundation for importing pro
 
 PST import uses Microsoft Outlook on the local machine to open and read PST files.
 
+## Sprint 3 Practical Contact Manager
+
+- Contacts are stored between sessions in a local SQLite database
+- Multiple PST files can be imported after each other
+- Contacts are merged by email address
+- Search filters contacts in real time by name, email, and project number
+- DataGrid columns are sortable
+- Double-clicking a contact opens a detail window
+- CSV export exports only the currently filtered contacts
+- Status bar shows contact, project, and mail counts
+- Application menu includes PST import, CSV export, exit, and about
+
 ## Projects
 
 - `ProjectInformation.UI` - WPF application shell and MVVM view models

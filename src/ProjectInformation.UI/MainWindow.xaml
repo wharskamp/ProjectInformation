@@ -5,14 +5,30 @@
         Height="620"
         Width="920"
         MinHeight="480"
-        MinWidth="720">
+        MinWidth="720"
+        Loaded="WindowLoaded">
     <DockPanel>
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="Bestand">
+                <MenuItem Header="PST importeren" Command="{Binding ImportPstFileCommand}" />
+                <MenuItem Header="CSV exporteren" Command="{Binding ExportCsvCommand}" />
+                <Separator />
+                <MenuItem Header="Afsluiten" Click="ExitMenuItemClick" />
+            </MenuItem>
+            <MenuItem Header="Help">
+                <MenuItem Header="Over" Click="AboutMenuItemClick" />
+            </MenuItem>
+        </Menu>
+
         <StatusBar DockPanel.Dock="Bottom">
+            <TextBlock Text="{Binding StatisticsText}" />
+            <Separator />
             <TextBlock Text="{Binding StatusMessage}" />
         </StatusBar>
 
         <Grid Margin="24">
             <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
@@ -49,28 +65,30 @@
                         Command="{Binding ImportCommand}"
                         Padding="18,8"
                         Margin="0,0,8,0" />
-                <Button Content="Contacts"
-                        Command="{Binding OpenContactsCommand}"
-                        IsEnabled="False"
-                        Padding="18,8"
-                        Margin="0,0,8,0" />
                 <Button Content="Export CSV"
                         Command="{Binding ExportCsvCommand}"
                         Padding="18,8" />
             </StackPanel>
 
-            <DataGrid Grid.Row="3"
-                      ItemsSource="{Binding Contacts}"
+            <TextBox Grid.Row="3"
+                     Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                     Margin="0,18,0,0"
+                     Height="30"
+                     VerticalContentAlignment="Center" />
+
+            <DataGrid Grid.Row="4"
+                      ItemsSource="{Binding ContactsView}"
                       AutoGenerateColumns="False"
                       CanUserAddRows="False"
                       IsReadOnly="True"
-                      Margin="0,24,0,0">
+                      Margin="0,12,0,0"
+                      MouseDoubleClick="ContactsDataGridMouseDoubleClick">
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="Naam" Binding="{Binding Naam}" Width="2*" />
-                    <DataGridTextColumn Header="Email" Binding="{Binding Email}" Width="2*" />
-                    <DataGridTextColumn Header="Projecten" Binding="{Binding Projecten}" Width="2*" />
-                    <DataGridTextColumn Header="LaatsteContact" Binding="{Binding LaatsteContact, StringFormat=yyyy-MM-dd HH:mm}" Width="*" />
-                    <DataGridTextColumn Header="AantalMails" Binding="{Binding AantalMails}" Width="*" />
+                    <DataGridTextColumn Header="Naam" Binding="{Binding Naam}" Width="2*" SortMemberPath="Naam" />
+                    <DataGridTextColumn Header="Email" Binding="{Binding Email}" Width="2*" SortMemberPath="Email" />
+                    <DataGridTextColumn Header="Projecten" Binding="{Binding Projecten}" Width="2*" SortMemberPath="Projecten" />
+                    <DataGridTextColumn Header="LaatsteContact" Binding="{Binding LaatsteContact, StringFormat=yyyy-MM-dd HH:mm}" Width="*" SortMemberPath="LaatsteContact" />
+                    <DataGridTextColumn Header="AantalMails" Binding="{Binding AantalMails}" Width="*" SortMemberPath="AantalMails" />
                 </DataGrid.Columns>
             </DataGrid>
         </Grid>
