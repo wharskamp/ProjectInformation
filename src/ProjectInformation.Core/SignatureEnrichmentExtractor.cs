@@ -33,9 +33,9 @@ public static partial class SignatureEnrichmentExtractor
 
     private static string FindBusinessTelephoneNumber(string signature, string mobile)
     {
-        return PhonePattern().Matches(signature)
+        return LandlinePattern().Matches(signature)
             .Select(match => match.Value.Trim())
-            .FirstOrDefault(phone => !phone.Equals(mobile, StringComparison.OrdinalIgnoreCase))
+            .FirstOrDefault()
             ?? string.Empty;
     }
 
@@ -45,7 +45,8 @@ public static partial class SignatureEnrichmentExtractor
             .Split(new[] { "\r\n", "\n" }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
             .Where(line => line.Length is > 1 and < 80)
             .Where(line => !line.Contains('@'))
-            .Where(line => !PhonePattern().IsMatch(line))
+            .Where(line => !LandlinePattern().IsMatch(line))
+            .Where(line => !MobilePattern().IsMatch(line))
             .Where(line => !line.StartsWith("Tel", StringComparison.OrdinalIgnoreCase))
             .Where(line => !line.StartsWith("Mob", StringComparison.OrdinalIgnoreCase))
             .ToArray();
@@ -66,11 +67,11 @@ public static partial class SignatureEnrichmentExtractor
         return string.Join(Environment.NewLine, lines.TakeLast(count));
     }
 
-    [GeneratedRegex(@"(?<!\d)(?:06[-\s]?\d{8}|\+31\s?6\s?\d{8}|\+31\s?6\s?\d{4}\s?\d{4})(?!\d)", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    [GeneratedRegex(@"(?<!\d)(?:06[-\s]?\d{8}|06\s?\d{8}|\+31\s?6\s?\d{8}|\+31\s?6\s?\d{4}\s?\d{4})(?!\d)", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
     private static partial Regex MobilePattern();
 
-    [GeneratedRegex(@"(?<!\d)(?:06[-\s]?\d{8}|\+31\s?6\s?\d{4}\s?\d{4}|0\d{2,3}[-\s]?\d{6,7})(?!\d)", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
-    private static partial Regex PhonePattern();
+    [GeneratedRegex(@"(?<!\d)(?:0[1-9]\d{1,2}[-\s]?\d{6,7})(?!\d)", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    private static partial Regex LandlinePattern();
 
     [GeneratedRegex(@"\b(?:B\.?V\.?|N\.?V\.?|Ltd\.?|LLC|Inc\.?|GmbH|Company|Celsius)\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
     private static partial Regex CompanyPattern();

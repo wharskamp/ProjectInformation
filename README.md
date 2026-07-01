@@ -43,6 +43,16 @@ PST import uses Microsoft Outlook on the local machine to open and read PST file
 - Keeps the most complete contact information when merging imports
 - Shows enrichment fields in SQLite, DataGrid, detail view, and CSV export
 
+## Sprint 5 Contact Quality
+
+- Resolves company names by priority: Outlook contact, Exchange user, signature, then email domain
+- Adds a simple domain-to-company mapping for known domains
+- Separates landline and mobile phone detection
+- Keeps only the first detected business phone and mobile phone from signatures
+- Merges contacts by email without overwriting existing values with empty data
+- Stores unique alphabetically sorted project numbers
+- Exports CSV as `Naam`, `Bedrijf`, `Email`, `Telefoon`, `Mobiel`, `Projecten`, `LaatsteContact`, `AantalMails`
+
 ## Projects
 
 - `ProjectInformation.UI` - WPF application shell and MVVM view models

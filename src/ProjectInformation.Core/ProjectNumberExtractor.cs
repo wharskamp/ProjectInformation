@@ -19,6 +19,6 @@ public static partial class ProjectNumberExtractor
             .ToArray();
     }
 
-    [GeneratedRegex(@"\b(?:P-?|Project\s+)(?<number>\d{5})\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    [GeneratedRegex(@"\b(?:P-?|Project\s+)(?<number>\d{4,5})\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
     private static partial Regex ProjectNumberPattern();
 }

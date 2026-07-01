@@ -15,19 +15,18 @@ public sealed class CsvExportService : ICsvExportService
         ArgumentException.ThrowIfNullOrWhiteSpace(destinationFilePath);
 
         var builder = new StringBuilder();
-        builder.AppendLine("Naam,Email,Projecten,LaatsteContact,AantalMails,Company,BusinessTelephoneNumber,MobileTelephoneNumber,JobTitle");
+        builder.AppendLine("Naam,Bedrijf,Email,Telefoon,Mobiel,Projecten,LaatsteContact,AantalMails");
 
         foreach (var contact in contacts)
         {
             builder.Append(Csv(contact.Naam)).Append(',');
-            builder.Append(Csv(contact.Email)).Append(',');
-            builder.Append(Csv(contact.Projecten)).Append(',');
-            builder.Append(Csv(contact.LaatsteContact.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture))).Append(',');
-            builder.Append(contact.AantalMails.ToString(CultureInfo.InvariantCulture)).Append(',');
             builder.Append(Csv(contact.Company)).Append(',');
+            builder.Append(Csv(contact.Email)).Append(',');
             builder.Append(Csv(contact.BusinessTelephoneNumber)).Append(',');
             builder.Append(Csv(contact.MobileTelephoneNumber)).Append(',');
-            builder.AppendLine(Csv(contact.JobTitle));
+            builder.Append(Csv(contact.Projecten)).Append(',');
+            builder.Append(Csv(contact.LaatsteContact.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture))).Append(',');
+            builder.AppendLine(contact.AantalMails.ToString(CultureInfo.InvariantCulture));
         }
 
         await File.WriteAllTextAsync(destinationFilePath, builder.ToString(), Encoding.UTF8, cancellationToken);

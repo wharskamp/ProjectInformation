@@ -55,4 +55,26 @@ public sealed class ContactAggregatorTests
         Assert.AreEqual("06-12345678", contacts[0].MobileTelephoneNumber);
         Assert.AreEqual("Engineer", contacts[0].JobTitle);
     }
+
+    [TestMethod]
+    public void MergeContacts_KeepsMoreCompleteContactQualityFields()
+    {
+        var existing = new[]
+        {
+            new ContactRecord("Anne", "anne@example.com", "P2415; P2415", new DateTime(2026, 1, 1), 1, "Celsius", "", "", "")
+        };
+        var imported = new[]
+        {
+            new ContactRecord("Anne", "anne@example.com", "P1234; P2415", new DateTime(2026, 1, 2), 1, "", "0318-123456", "06 12345678", "Projectleider")
+        };
+
+        var contacts = ContactAggregator.MergeContacts(existing, imported);
+
+        Assert.AreEqual(1, contacts.Count);
+        Assert.AreEqual("Celsius", contacts[0].Company);
+        Assert.AreEqual("0318-123456", contacts[0].BusinessTelephoneNumber);
+        Assert.AreEqual("06 12345678", contacts[0].MobileTelephoneNumber);
+        Assert.AreEqual("Projectleider", contacts[0].JobTitle);
+        Assert.AreEqual("P1234; P2415", contacts[0].Projecten);
+    }
 }

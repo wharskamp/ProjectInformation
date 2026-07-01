@@ -31,11 +31,24 @@ public sealed class SignatureEnrichmentExtractorTests
     {
         var result = SignatureEnrichmentExtractor.Extract("""
             Test B.V.
-            06-12345678
+            06 12345678
             088-1234567
             """);
 
         Assert.AreEqual("088-1234567", result.BusinessTelephoneNumber);
-        Assert.AreEqual("06-12345678", result.MobileTelephoneNumber);
+        Assert.AreEqual("06 12345678", result.MobileTelephoneNumber);
+    }
+
+    [DataTestMethod]
+    [DataRow("06-12345678", "", "06-12345678")]
+    [DataRow("+31 6 12345678", "", "+31 6 12345678")]
+    [DataRow("0318-123456", "0318-123456", "")]
+    [DataRow("088-1234567", "088-1234567", "")]
+    public void Extract_ClassifiesFirstBusinessAndMobileNumber(string phoneLine, string expectedBusiness, string expectedMobile)
+    {
+        var result = SignatureEnrichmentExtractor.Extract($"Test B.V.{Environment.NewLine}{phoneLine}");
+
+        Assert.AreEqual(expectedBusiness, result.BusinessTelephoneNumber);
+        Assert.AreEqual(expectedMobile, result.MobileTelephoneNumber);
     }
 }

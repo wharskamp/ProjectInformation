@@ -112,14 +112,16 @@ public sealed class PstImportService : IPstImportService
                     if (item.Class == 43)
                     {
                         var contactEnrichment = GetContactEnrichment(item);
+                        var exchangeCompany = GetExchangeCompany(item);
                         var signatureEnrichment = SignatureEnrichmentExtractor.Extract(SafeString(item.Body));
+                        var senderEmailAddress = GetSenderEmailAddress(item);
 
                         mails.Add(new MailSummary(
                             SafeString(item.SenderName),
-                            GetSenderEmailAddress(item),
+                            senderEmailAddress,
                             SafeString(item.Subject),
                             SafeDate(item.ReceivedTime, item.SentOn),
-                            FirstFilled(contactEnrichment.Company, signatureEnrichment.Company),
+                            CompanyResolver.Resolve(contactEnrichment.Company, exchangeCompany, signatureEnrichment.Company, senderEmailAddress),
                             FirstFilled(contactEnrichment.BusinessTelephoneNumber, signatureEnrichment.BusinessTelephoneNumber),
                             FirstFilled(contactEnrichment.MobileTelephoneNumber, signatureEnrichment.MobileTelephoneNumber),
                             contactEnrichment.JobTitle));
@@ -220,6 +222,29 @@ public sealed class PstImportService : IPstImportService
         finally
         {
             ReleaseComObject(contact);
+            ReleaseComObject(sender);
+        }
+    }
+
+    private static string GetExchangeCompany(dynamic item)
+    {
+        dynamic? sender = null;
+        dynamic? exchangeUser = null;
+
+        try
+        {
+            sender = item.Sender;
+            exchangeUser = sender?.GetExchangeUser();
+
+            return SafeString(exchangeUser?.CompanyName);
+        }
+        catch (COMException)
+        {
+            return string.Empty;
+        }
+        finally
+        {
+            ReleaseComObject(exchangeUser);
             ReleaseComObject(sender);
         }
     }
