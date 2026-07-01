@@ -4,5 +4,8 @@ namespace ProjectInformation.Core.Services;
 
 public interface IPstImportService
 {
-    Task<ImportResult> ImportAsync(string pstFilePath, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<MailSummary>> ReadMailsAsync(
+        string pstFilePath,
+        IProgress<int>? progress = null,
+        CancellationToken cancellationToken = default);
 }

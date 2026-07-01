@@ -25,9 +25,11 @@ public sealed class ProjectInformationDbInitializer
         command.CommandText = """
             CREATE TABLE IF NOT EXISTS Contacts (
                 Id INTEGER PRIMARY KEY AUTOINCREMENT,
-                DisplayName TEXT NOT NULL,
-                EmailAddress TEXT NULL,
-                CreatedUtc TEXT NOT NULL
+                Naam TEXT NOT NULL,
+                Email TEXT NOT NULL,
+                Projecten TEXT NOT NULL,
+                LaatsteContact TEXT NOT NULL,
+                AantalMails INTEGER NOT NULL
             );
             """;
 

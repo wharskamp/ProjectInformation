@@ -1,3 +1,5 @@
+using System.Collections.Concurrent;
+using System.Runtime.InteropServices;
 using ProjectInformation.Core.Models;
 using ProjectInformation.Core.Services;
 
@@ -5,10 +7,221 @@ namespace ProjectInformation.PstReader;
 
 public sealed class PstImportService : IPstImportService
 {
-    public Task<ImportResult> ImportAsync(string pstFilePath, CancellationToken cancellationToken = default)
+    public Task<IReadOnlyList<MailSummary>> ReadMailsAsync(
+        string pstFilePath,
+        IProgress<int>? progress = null,
+        CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(pstFilePath);
 
-        return Task.FromResult(new ImportResult(false, "PST import is not implemented yet."));
+        if (!File.Exists(pstFilePath))
+        {
+            throw new FileNotFoundException("The selected PST file could not be found.", pstFilePath);
+        }
+
+        var completion = new TaskCompletionSource<IReadOnlyList<MailSummary>>();
+        var thread = new Thread(() =>
+        {
+            try
+            {
+                completion.SetResult(ReadMailsOnStaThread(pstFilePath, progress, cancellationToken));
+            }
+            catch (Exception ex)
+            {
+                completion.SetException(ex);
+            }
+        });
+
+        thread.SetApartmentState(ApartmentState.STA);
+        thread.Start();
+
+        return completion.Task;
+    }
+
+    private static IReadOnlyList<MailSummary> ReadMailsOnStaThread(
+        string pstFilePath,
+        IProgress<int>? progress,
+        CancellationToken cancellationToken)
+    {
+        var outlookType = Type.GetTypeFromProgID("Outlook.Application")
+            ?? throw new InvalidOperationException("Microsoft Outlook is required to import PST files.");
+
+        dynamic? outlook = null;
+        dynamic? session = null;
+        dynamic? store = null;
+        dynamic? rootFolder = null;
+
+        try
+        {
+            outlook = Activator.CreateInstance(outlookType)
+                ?? throw new InvalidOperationException("Could not start Microsoft Outlook.");
+            session = outlook.GetNamespace("MAPI");
+
+            var storeCountBefore = session.Stores.Count;
+            session.AddStore(pstFilePath);
+            store = session.Stores.Item(storeCountBefore + 1);
+            rootFolder = store.GetRootFolder();
+
+            var mails = new ConcurrentBag<MailSummary>();
+            ReadFolder(rootFolder, mails, progress, cancellationToken);
+
+            var result = mails.OrderByDescending(mail => mail.Date).ToArray();
+            try
+            {
+                session.RemoveStore(rootFolder);
+            }
+            catch (COMException)
+            {
+            }
+
+            return result;
+        }
+        finally
+        {
+            ReleaseComObject(rootFolder);
+            ReleaseComObject(store);
+            ReleaseComObject(session);
+            ReleaseComObject(outlook);
+        }
+    }
+
+    private static void ReadFolder(
+        dynamic folder,
+        ConcurrentBag<MailSummary> mails,
+        IProgress<int>? progress,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        dynamic? items = null;
+        dynamic? subFolders = null;
+
+        try
+        {
+            items = folder.Items;
+
+            for (var index = 1; index <= items.Count; index++)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                dynamic? item = null;
+                try
+                {
+                    item = items.Item(index);
+                    if (item.Class == 43)
+                    {
+                        mails.Add(new MailSummary(
+                            SafeString(item.SenderName),
+                            GetSenderEmailAddress(item),
+                            SafeString(item.Subject),
+                            SafeDate(item.ReceivedTime, item.SentOn)));
+                        progress?.Report(mails.Count);
+                    }
+                }
+                catch (COMException)
+                {
+                }
+                finally
+                {
+                    ReleaseComObject(item);
+                }
+            }
+
+            subFolders = folder.Folders;
+            for (var index = 1; index <= subFolders.Count; index++)
+            {
+                dynamic? subFolder = null;
+                try
+                {
+                    subFolder = subFolders.Item(index);
+                    ReadFolder(subFolder, mails, progress, cancellationToken);
+                }
+                finally
+                {
+                    ReleaseComObject(subFolder);
+                }
+            }
+        }
+        finally
+        {
+            ReleaseComObject(subFolders);
+            ReleaseComObject(items);
+        }
+    }
+
+    private static string GetSenderEmailAddress(dynamic item)
+    {
+        try
+        {
+            var senderEmailType = SafeString(item.SenderEmailType);
+            if (senderEmailType.Equals("EX", StringComparison.OrdinalIgnoreCase))
+            {
+                dynamic? sender = null;
+                dynamic? exchangeUser = null;
+
+                try
+                {
+                    sender = item.Sender;
+                    exchangeUser = sender?.GetExchangeUser();
+                    var primarySmtpAddress = SafeString(exchangeUser?.PrimarySmtpAddress);
+                    if (!string.IsNullOrWhiteSpace(primarySmtpAddress))
+                    {
+                        return primarySmtpAddress;
+                    }
+                }
+                finally
+                {
+                    ReleaseComObject(exchangeUser);
+                    ReleaseComObject(sender);
+                }
+            }
+
+            return SafeString(item.SenderEmailAddress);
+        }
+        catch (COMException)
+        {
+            return string.Empty;
+        }
+    }
+
+    private static DateTime SafeDate(dynamic primary, dynamic fallback)
+    {
+        try
+        {
+            if (primary is DateTime primaryDate)
+            {
+                return primaryDate;
+            }
+
+            if (fallback is DateTime fallbackDate)
+            {
+                return fallbackDate;
+            }
+        }
+        catch (COMException)
+        {
+        }
+
+        return DateTime.MinValue;
+    }
+
+    private static string SafeString(dynamic? value)
+    {
+        try
+        {
+            return value?.ToString() ?? string.Empty;
+        }
+        catch (COMException)
+        {
+            return string.Empty;
+        }
+    }
+
+    private static void ReleaseComObject(object? value)
+    {
+        if (value is not null && Marshal.IsComObject(value))
+        {
+            Marshal.FinalReleaseComObject(value);
+        }
     }
 }

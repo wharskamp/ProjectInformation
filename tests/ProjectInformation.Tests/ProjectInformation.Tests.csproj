@@ -12,6 +12,5 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\ProjectInformation.Core\ProjectInformation.Core.csproj" />
-    <ProjectReference Include="..\..\src\ProjectInformation.PstReader\ProjectInformation.PstReader.csproj" />
   </ItemGroup>
 </Project>
