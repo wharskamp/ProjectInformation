@@ -3,12 +3,16 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Contact"
         Width="520"
-        Height="360"
+        Height="520"
         MinWidth="420"
         MinHeight="300"
         WindowStartupLocation="CenterOwner">
     <Grid Margin="20">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
@@ -33,8 +37,20 @@
         <TextBlock Grid.Row="3" Text="Laatste contact" FontWeight="SemiBold" Margin="0,10,0,0" />
         <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding LaatsteContact, StringFormat=yyyy-MM-dd HH:mm}" Margin="0,10,0,0" />
 
-        <TextBlock Grid.Row="4" Text="Projectnummers" FontWeight="SemiBold" Margin="0,10,0,0" />
-        <TextBox Grid.Row="4"
+        <TextBlock Grid.Row="4" Text="Company" FontWeight="SemiBold" Margin="0,10,0,0" />
+        <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding Company}" TextWrapping="Wrap" Margin="0,10,0,0" />
+
+        <TextBlock Grid.Row="5" Text="Zakelijk telefoon" FontWeight="SemiBold" Margin="0,10,0,0" />
+        <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding BusinessTelephoneNumber}" Margin="0,10,0,0" />
+
+        <TextBlock Grid.Row="6" Text="Mobiel" FontWeight="SemiBold" Margin="0,10,0,0" />
+        <TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding MobileTelephoneNumber}" Margin="0,10,0,0" />
+
+        <TextBlock Grid.Row="7" Text="Functie" FontWeight="SemiBold" Margin="0,10,0,0" />
+        <TextBlock Grid.Row="7" Grid.Column="1" Text="{Binding JobTitle}" TextWrapping="Wrap" Margin="0,10,0,0" />
+
+        <TextBlock Grid.Row="8" Text="Projectnummers" FontWeight="SemiBold" Margin="0,10,0,0" />
+        <TextBox Grid.Row="8"
                  Grid.Column="1"
                  Text="{Binding Projecten}"
                  IsReadOnly="True"
@@ -42,7 +58,7 @@
                  VerticalScrollBarVisibility="Auto"
                  Margin="0,10,0,0" />
 
-        <Button Grid.Row="5"
+        <Button Grid.Row="9"
                 Grid.Column="1"
                 Content="Sluiten"
                 HorizontalAlignment="Right"

@@ -34,14 +34,36 @@ public sealed class ContactRepository
             await using var insertCommand = connection.CreateCommand();
             insertCommand.Transaction = (SqliteTransaction)transaction;
             insertCommand.CommandText = """
-                INSERT INTO Contacts (Naam, Email, Projecten, LaatsteContact, AantalMails)
-                VALUES ($naam, $email, $projecten, $laatsteContact, $aantalMails);
+                INSERT INTO Contacts (
+                    Naam,
+                    Email,
+                    Projecten,
+                    LaatsteContact,
+                    AantalMails,
+                    Company,
+                    BusinessTelephoneNumber,
+                    MobileTelephoneNumber,
+                    JobTitle)
+                VALUES (
+                    $naam,
+                    $email,
+                    $projecten,
+                    $laatsteContact,
+                    $aantalMails,
+                    $company,
+                    $businessTelephoneNumber,
+                    $mobileTelephoneNumber,
+                    $jobTitle);
                 """;
             insertCommand.Parameters.AddWithValue("$naam", contact.Naam);
             insertCommand.Parameters.AddWithValue("$email", contact.Email);
             insertCommand.Parameters.AddWithValue("$projecten", contact.Projecten);
             insertCommand.Parameters.AddWithValue("$laatsteContact", contact.LaatsteContact.ToString("O"));
             insertCommand.Parameters.AddWithValue("$aantalMails", contact.AantalMails);
+            insertCommand.Parameters.AddWithValue("$company", contact.Company);
+            insertCommand.Parameters.AddWithValue("$businessTelephoneNumber", contact.BusinessTelephoneNumber);
+            insertCommand.Parameters.AddWithValue("$mobileTelephoneNumber", contact.MobileTelephoneNumber);
+            insertCommand.Parameters.AddWithValue("$jobTitle", contact.JobTitle);
 
             await insertCommand.ExecuteNonQueryAsync(cancellationToken);
         }
@@ -60,7 +82,16 @@ public sealed class ContactRepository
 
         await using var command = connection.CreateCommand();
         command.CommandText = """
-            SELECT Naam, Email, Projecten, LaatsteContact, AantalMails
+            SELECT
+                Naam,
+                Email,
+                Projecten,
+                LaatsteContact,
+                AantalMails,
+                Company,
+                BusinessTelephoneNumber,
+                MobileTelephoneNumber,
+                JobTitle
             FROM Contacts
             ORDER BY Naam, Email;
             """;
@@ -73,7 +104,11 @@ public sealed class ContactRepository
                 reader.GetString(1),
                 reader.GetString(2),
                 DateTime.Parse(reader.GetString(3)),
-                reader.GetInt32(4)));
+                reader.GetInt32(4),
+                reader.GetString(5),
+                reader.GetString(6),
+                reader.GetString(7),
+                reader.GetString(8)));
         }
 
         return contacts;

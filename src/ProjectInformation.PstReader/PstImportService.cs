@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Runtime.InteropServices;
+using ProjectInformation.Core;
 using ProjectInformation.Core.Models;
 using ProjectInformation.Core.Services;
 
@@ -110,11 +111,18 @@ public sealed class PstImportService : IPstImportService
                     item = items.Item(index);
                     if (item.Class == 43)
                     {
+                        var contactEnrichment = GetContactEnrichment(item);
+                        var signatureEnrichment = SignatureEnrichmentExtractor.Extract(SafeString(item.Body));
+
                         mails.Add(new MailSummary(
                             SafeString(item.SenderName),
                             GetSenderEmailAddress(item),
                             SafeString(item.Subject),
-                            SafeDate(item.ReceivedTime, item.SentOn)));
+                            SafeDate(item.ReceivedTime, item.SentOn),
+                            FirstFilled(contactEnrichment.Company, signatureEnrichment.Company),
+                            FirstFilled(contactEnrichment.BusinessTelephoneNumber, signatureEnrichment.BusinessTelephoneNumber),
+                            FirstFilled(contactEnrichment.MobileTelephoneNumber, signatureEnrichment.MobileTelephoneNumber),
+                            contactEnrichment.JobTitle));
                         progress?.Report(mails.Count);
                     }
                 }
@@ -184,6 +192,43 @@ public sealed class PstImportService : IPstImportService
         }
     }
 
+    private static ContactEnrichment GetContactEnrichment(dynamic item)
+    {
+        dynamic? sender = null;
+        dynamic? contact = null;
+
+        try
+        {
+            sender = item.Sender;
+            contact = sender?.GetContact();
+
+            if (contact is null)
+            {
+                return ContactEnrichment.Empty;
+            }
+
+            return new ContactEnrichment(
+                SafeString(contact.CompanyName),
+                SafeString(contact.BusinessTelephoneNumber),
+                SafeString(contact.MobileTelephoneNumber),
+                SafeString(contact.JobTitle));
+        }
+        catch (COMException)
+        {
+            return ContactEnrichment.Empty;
+        }
+        finally
+        {
+            ReleaseComObject(contact);
+            ReleaseComObject(sender);
+        }
+    }
+
+    private static string FirstFilled(params string[] values)
+    {
+        return values.FirstOrDefault(value => !string.IsNullOrWhiteSpace(value))?.Trim() ?? string.Empty;
+    }
+
     private static DateTime SafeDate(dynamic primary, dynamic fallback)
     {
         try
@@ -223,5 +268,14 @@ public sealed class PstImportService : IPstImportService
         {
             Marshal.FinalReleaseComObject(value);
         }
+    }
+
+    private sealed record ContactEnrichment(
+        string Company,
+        string BusinessTelephoneNumber,
+        string MobileTelephoneNumber,
+        string JobTitle)
+    {
+        public static ContactEnrichment Empty { get; } = new(string.Empty, string.Empty, string.Empty, string.Empty);
     }
 }

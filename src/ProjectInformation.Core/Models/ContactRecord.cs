@@ -5,4 +5,8 @@ public sealed record ContactRecord(
     string Email,
     string Projecten,
     DateTime LaatsteContact,
-    int AantalMails);
+    int AantalMails,
+    string Company,
+    string BusinessTelephoneNumber,
+    string MobileTelephoneNumber,
+    string JobTitle);

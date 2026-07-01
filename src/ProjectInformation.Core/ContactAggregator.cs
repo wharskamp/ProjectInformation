@@ -22,7 +22,11 @@ public static class ContactAggregator
                     first.SenderEmailAddress.Trim(),
                     string.Join("; ", projects),
                     group.Max(mail => mail.Date),
-                    group.Count());
+                    group.Count(),
+                    BestValue(group.Select(mail => mail.Company)),
+                    BestValue(group.Select(mail => mail.BusinessTelephoneNumber)),
+                    BestValue(group.Select(mail => mail.MobileTelephoneNumber)),
+                    BestValue(group.Select(mail => mail.JobTitle)));
             })
             .OrderBy(contact => contact.Naam, StringComparer.CurrentCultureIgnoreCase)
             .ThenBy(contact => contact.Email, StringComparer.OrdinalIgnoreCase)
@@ -45,11 +49,15 @@ public static class ContactAggregator
                     .Order(StringComparer.OrdinalIgnoreCase);
 
                 return new ContactRecord(
-                    latest.Naam,
-                    latest.Email,
+                    BestValue(group.Select(contact => contact.Naam), latest.Naam),
+                    BestValue(group.Select(contact => contact.Email), latest.Email),
                     string.Join("; ", projects),
                     group.Max(contact => contact.LaatsteContact),
-                    group.Sum(contact => contact.AantalMails));
+                    group.Sum(contact => contact.AantalMails),
+                    BestValue(group.Select(contact => contact.Company)),
+                    BestValue(group.Select(contact => contact.BusinessTelephoneNumber)),
+                    BestValue(group.Select(contact => contact.MobileTelephoneNumber)),
+                    BestValue(group.Select(contact => contact.JobTitle)));
             })
             .OrderBy(contact => contact.Naam, StringComparer.CurrentCultureIgnoreCase)
             .ThenBy(contact => contact.Email, StringComparer.OrdinalIgnoreCase)
@@ -74,5 +82,15 @@ public static class ContactAggregator
         }
 
         return contact.Naam.Trim();
+    }
+
+    private static string BestValue(IEnumerable<string> values, string fallback = "")
+    {
+        return values
+            .Where(value => !string.IsNullOrWhiteSpace(value))
+            .OrderByDescending(value => value.Trim().Length)
+            .Select(value => value.Trim())
+            .FirstOrDefault()
+            ?? fallback;
     }
 }

@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="ProjectInformation"
         Height="620"
-        Width="920"
+        Width="1180"
         MinHeight="480"
         MinWidth="720"
         Loaded="WindowLoaded">
@@ -87,6 +87,10 @@
                     <DataGridTextColumn Header="Naam" Binding="{Binding Naam}" Width="2*" SortMemberPath="Naam" />
                     <DataGridTextColumn Header="Email" Binding="{Binding Email}" Width="2*" SortMemberPath="Email" />
                     <DataGridTextColumn Header="Projecten" Binding="{Binding Projecten}" Width="2*" SortMemberPath="Projecten" />
+                    <DataGridTextColumn Header="Company" Binding="{Binding Company}" Width="*" SortMemberPath="Company" />
+                    <DataGridTextColumn Header="Business Phone" Binding="{Binding BusinessTelephoneNumber}" Width="*" SortMemberPath="BusinessTelephoneNumber" />
+                    <DataGridTextColumn Header="Mobile" Binding="{Binding MobileTelephoneNumber}" Width="*" SortMemberPath="MobileTelephoneNumber" />
+                    <DataGridTextColumn Header="Job Title" Binding="{Binding JobTitle}" Width="*" SortMemberPath="JobTitle" />
                     <DataGridTextColumn Header="LaatsteContact" Binding="{Binding LaatsteContact, StringFormat=yyyy-MM-dd HH:mm}" Width="*" SortMemberPath="LaatsteContact" />
                     <DataGridTextColumn Header="AantalMails" Binding="{Binding AantalMails}" Width="*" SortMemberPath="AantalMails" />
                 </DataGrid.Columns>

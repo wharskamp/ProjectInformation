@@ -29,10 +29,28 @@ public sealed class ProjectInformationDbInitializer
                 Email TEXT NOT NULL,
                 Projecten TEXT NOT NULL,
                 LaatsteContact TEXT NOT NULL,
-                AantalMails INTEGER NOT NULL
+                AantalMails INTEGER NOT NULL,
+                Company TEXT NOT NULL DEFAULT '',
+                BusinessTelephoneNumber TEXT NOT NULL DEFAULT '',
+                MobileTelephoneNumber TEXT NOT NULL DEFAULT '',
+                JobTitle TEXT NOT NULL DEFAULT ''
             );
             """;
 
         await command.ExecuteNonQueryAsync(cancellationToken);
+
+        foreach (var column in new[] { "Company", "BusinessTelephoneNumber", "MobileTelephoneNumber", "JobTitle" })
+        {
+            await using var alterCommand = connection.CreateCommand();
+            alterCommand.CommandText = $"ALTER TABLE Contacts ADD COLUMN {column} TEXT NOT NULL DEFAULT '';";
+
+            try
+            {
+                await alterCommand.ExecuteNonQueryAsync(cancellationToken);
+            }
+            catch (SqliteException ex) when (ex.SqliteErrorCode == 1)
+            {
+            }
+        }
     }
 }

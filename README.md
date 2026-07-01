@@ -34,6 +34,15 @@ PST import uses Microsoft Outlook on the local machine to open and read PST file
 - Status bar shows contact, project, and mail counts
 - Application menu includes PST import, CSV export, exit, and about
 
+## Sprint 4 Contact Enrichment
+
+- Imports company, business phone, mobile phone, and job title
+- Uses Outlook contact properties first when available
+- Falls back to signature analysis for company and phone numbers
+- Supports Dutch phone formats such as `06-12345678`, `+31 6 12345678`, `0318-123456`, and `088-1234567`
+- Keeps the most complete contact information when merging imports
+- Shows enrichment fields in SQLite, DataGrid, detail view, and CSV export
+
 ## Projects
 
 - `ProjectInformation.UI` - WPF application shell and MVVM view models
